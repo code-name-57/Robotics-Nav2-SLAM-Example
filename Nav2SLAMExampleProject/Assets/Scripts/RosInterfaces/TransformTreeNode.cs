@@ -23,9 +23,9 @@ namespace Unity.Robotics.Nav2SlamExample
             PopulateChildNodes(this);
         }
 
-        public static TransformStampedMsg ToTransformStamped(TransformTreeNode node)
+        public static TransformStampedMsg ToTransformStamped(uint seq, TransformTreeNode node)
         {
-            return node.Transform.ToRosTransformStamped(Clock.time);
+            return node.Transform.ToRosTransformStamped(seq, Clock.time);
         }
 
         static void PopulateChildNodes(TransformTreeNode tfNode)

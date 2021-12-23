@@ -34,6 +34,7 @@ namespace Unity.Robotics.Nav2SlamExample
 
         bool ShouldPublishMessage => Clock.NowTimeInSeconds > m_LastPublishTimeSeconds + PublishPeriodSeconds;
 
+        uint seq = 0;
         // Start is called before the first frame update
         void Start()
         {
@@ -49,17 +50,17 @@ namespace Unity.Robotics.Nav2SlamExample
             m_LastPublishTimeSeconds = Clock.time + PublishPeriodSeconds;
         }
 
-        static void PopulateTfList(List<TransformStampedMsg> tfList, TransformTreeNode tfNode)
+        static void PopulateTfList(uint seq, List<TransformStampedMsg> tfList, TransformTreeNode tfNode)
         {
             // TODO: Some of this could be done once and cached rather than doing from scratch every time
             // Only generate transform messages from the children, because This node will be parented to the global frame
             foreach (var childTf in tfNode.Children)
             {
-                tfList.Add(TransformTreeNode.ToTransformStamped(childTf));
+                tfList.Add(TransformTreeNode.ToTransformStamped(seq, childTf));
 
                 if (!childTf.IsALeafNode)
                 {
-                    PopulateTfList(tfList, childTf);
+                    PopulateTfList(seq, tfList, childTf);
                 }
             }
         }
@@ -71,7 +72,7 @@ namespace Unity.Robotics.Nav2SlamExample
             if (m_GlobalFrameIds.Count > 0)
             {
                 var tfRootToGlobal = new TransformStampedMsg(
-                    new HeaderMsg(new TimeStamp(Clock.time), m_GlobalFrameIds.Last()),
+                    new HeaderMsg(seq, new TimeStamp(Clock.time), m_GlobalFrameIds.Last()),
                     m_TransformRoot.name,
                     m_TransformRoot.Transform.To<FLU>());
                 tfMessageList.Add(tfRootToGlobal);
@@ -86,18 +87,19 @@ namespace Unity.Robotics.Nav2SlamExample
             for (var i = 1; i < m_GlobalFrameIds.Count; ++i)
             {
                 var tfGlobalToGlobal = new TransformStampedMsg(
-                    new HeaderMsg(new TimeStamp(Clock.time), m_GlobalFrameIds[i - 1]),
+                    new HeaderMsg(seq, new TimeStamp(Clock.time), m_GlobalFrameIds[i - 1]),
                     m_GlobalFrameIds[i],
                     // Initializes to identity transform
                     new TransformMsg());
                 tfMessageList.Add(tfGlobalToGlobal);
             }
 
-            PopulateTfList(tfMessageList, m_TransformRoot);
+            PopulateTfList(seq, tfMessageList, m_TransformRoot);
 
             var tfMessage = new TFMessageMsg(tfMessageList.ToArray());
             m_ROS.Publish(k_TfTopic, tfMessage);
             m_LastPublishTimeSeconds = Clock.FrameStartTimeInSeconds;
+            seq++;
         }
 
         void Update()

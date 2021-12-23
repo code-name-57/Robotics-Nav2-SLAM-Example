@@ -20,10 +20,10 @@ namespace Unity.Robotics.Nav2SlamExample
                 tfUnity.localRotation.To<FLU>());
         }
 
-        public static TransformStampedMsg ToRosTransformStamped(this Transform tfUnity, double timeStamp)
+        public static TransformStampedMsg ToRosTransformStamped(this Transform tfUnity, uint seq, double timeStamp)
         {
             return new TransformStampedMsg(
-                new HeaderMsg(new TimeStamp(timeStamp), tfUnity.parent.gameObject.name),
+                new HeaderMsg(seq, new TimeStamp(timeStamp), tfUnity.parent.gameObject.name),
                 tfUnity.gameObject.name,
                 tfUnity.ToRosTransform());
         }
