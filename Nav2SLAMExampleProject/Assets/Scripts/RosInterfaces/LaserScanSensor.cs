@@ -98,7 +98,7 @@ namespace Unity.Robotics.Nav2SlamExample
                     frame_id = m_FrameId,
                     stamp = new TimeMsg
                     {
-                        sec = timestamp.Seconds,
+                        sec = (uint)timestamp.Seconds,
                         nanosec = timestamp.NanoSeconds,
                     }
                 },

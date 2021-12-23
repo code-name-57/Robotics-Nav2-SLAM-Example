@@ -46,7 +46,7 @@ namespace Unity.Robotics.Nav2SlamExample
             var publishTime = Clock.time;
             var clockMsg = new TimeMsg
             {
-                sec = (int)publishTime,
+                sec = (uint)publishTime,
                 nanosec = (uint)((publishTime - Math.Floor(publishTime)) * Clock.k_NanoSecondsInSeconds)
             };
             m_LastPublishTimeSeconds = publishTime;
