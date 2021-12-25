@@ -13,12 +13,20 @@ ENV ROS_WORKSPACE=catkin_ws
 RUN echo "Set disable_coredump false" >> /etc/sudo.conf
 
 RUN apt update
-RUN apt install -y dirmngr
+RUN apt install -y dirmngr curl
 
+# Setup your computer to accept software from packages.ros.org
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+
 RUN apt update
-RUN apt install -yq ros-${ROS_DISTRO}-ros-base python-rosdep ros-${ROS_DISTRO}-rviz ros-${ROS_DISTRO}-dwa-local-planner ros-${ROS_DISTRO}-turtlebot3-navigation ros-${ROS_DISTRO}-gmapping git
+RUN apt install -yq ros-${ROS_DISTRO}-ros-base \
+                    python-rosdep \
+                    ros-${ROS_DISTRO}-rviz \
+                    ros-${ROS_DISTRO}-dwa-local-planner \
+                    ros-${ROS_DISTRO}-turtlebot3-navigation \
+                    ros-${ROS_DISTRO}-gmapping \
+                    git
 
 RUN useradd --create-home --home-dir /home/${DEV_NAME} --shell /bin/bash --user-group --groups adm,sudo ${DEV_NAME} && \
     echo "$DEV_NAME:$DEV_NAME" | chpasswd && \
