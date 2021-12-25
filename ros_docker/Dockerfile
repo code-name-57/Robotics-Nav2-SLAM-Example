@@ -28,20 +28,38 @@ RUN apt install -yq ros-${ROS_DISTRO}-ros-base \
                     ros-${ROS_DISTRO}-gmapping \
                     git
 
+RUN apt install -yq vim \
+                    iputils-ping \
+                    net-tools \
+                    python-pip \
+                    ros-${ROS_DISTRO}-robot-state-publisher \
+                    ros-${ROS_DISTRO}-moveit \
+                    ros-${ROS_DISTRO}-rosbridge-suite \
+                    ros-${ROS_DISTRO}-joy \
+                    ros-${ROS_DISTRO}-ros-control \
+                    ros-${ROS_DISTRO}-ros-controllers \
+                    ros-${ROS_DISTRO}-tf2-web-republisher \
+                    dos2unix
+
+RUN sudo -H pip install rospkg jsonpickle
+
 RUN useradd --create-home --home-dir /home/${DEV_NAME} --shell /bin/bash --user-group --groups adm,sudo ${DEV_NAME} && \
     echo "$DEV_NAME:$DEV_NAME" | chpasswd && \
     echo "$DEV_NAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN git clone https://github.com/Unity-Technologies/ROS-TCP-Endpoint /home/${DEV_NAME}/${ROS_WORKSPACE}/src/ros_tcp_endpoint -b v0.6.0
 
-COPY --chown=${DEV_NAME} ./ros_docker/unity_slam_example /home/${DEV_NAME}/${ROS_WORKSPACE}/src/unity_slam_example
+COPY --chown=${DEV_NAME} ./ros_docker/src /home/${DEV_NAME}/${ROS_WORKSPACE}/src
 
 WORKDIR /home/${DEV_NAME}/${ROS_WORKSPACE}
 
 RUN echo "ROS_IP: 0.0.0.0" > /home/${DEV_NAME}/${ROS_WORKSPACE}/src/ros_tcp_endpoint/config/params.yaml
+RUN echo "ROS_IP: 0.0.0.0" > /home/${DEV_NAME}/${ROS_WORKSPACE}/src/niryo_moveit/config/params.yaml
 
 RUN rosdep init
 RUN rosdep update
+
+RUN /bin/bash -c "find /home/${DEV_NAME}/${ROS_WORKSPACE} -type f -print0 | xargs -0 dos2unix"
 
 RUN /bin/bash -c "source /opt/ros/$ROS_DISTRO/setup.bash ;\
 rosdep install --from-paths src --ignore-src -r -y;\
